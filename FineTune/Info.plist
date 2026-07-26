@@ -2,14 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>Mac Volume Mixer</string>
+	<key>CFBundleName</key>
+	<string>Mac Volume Mixer</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAudioCaptureUsageDescription</key>
-	<string>FineTune needs access to control volume levels for individual applications.</string>
+	<string>Mac Volume Mixer needs access to control volume levels for individual applications.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>FineTune needs microphone access to capture audio from apps using input-capable devices.</string>
+	<string>Mac Volume Mixer needs microphone access to capture audio from apps using input-capable devices.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>FineTune uses Bluetooth to connect paired audio devices from the menu bar.</string>
+	<string>Mac Volume Mixer uses Bluetooth to connect paired audio devices from the menu bar.</string>
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/ronitsingh10/FineTune/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>
