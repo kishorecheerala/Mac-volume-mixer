@@ -49,13 +49,13 @@ final class AudioRecordingPermission {
     func request() {
         #if ENABLE_TCC_SPI
         guard status != .authorized else { return }
-        Self.requestAccess { [weak self] granted in
-            Task { @MainActor in
-                guard let self else { return }
-                self.status = granted ? .authorized : .denied
+        let completion: @Sendable (Bool) -> Void = { [weak self] granted in
+            DispatchQueue.main.async {
+                self?.status = granted ? .authorized : .denied
                 logger.info("Audio capture permission request result: \(granted)")
             }
         }
+        Self.requestAccess(completion: completion)
         #endif
     }
 
@@ -79,7 +79,7 @@ final class AudioRecordingPermission {
     private static let tccServiceAudioCapture = "kTCCServiceAudioCapture" as CFString
 
     private typealias PreflightFunc = @convention(c) (CFString, CFDictionary?) -> Int
-    private typealias RequestFunc = @convention(c) (CFString, CFDictionary?, @escaping (Bool) -> Void) -> Void
+    private typealias RequestFunc = @convention(c) (CFString, CFDictionary?, @escaping @Sendable (Bool) -> Void) -> Void
 
     private static let apiHandle: UnsafeMutableRawPointer? = {
         dlopen("/System/Library/PrivateFrameworks/TCC.framework/Versions/A/TCC", RTLD_NOW)
@@ -106,7 +106,7 @@ final class AudioRecordingPermission {
         return spi(tccServiceAudioCapture, nil)
     }
 
-    private static func requestAccess(completion: @escaping (Bool) -> Void) {
+    private static func requestAccess(completion: @escaping @Sendable (Bool) -> Void) {
         guard let spi = requestSPI else {
             logger.warning("TCC request SPI unavailable")
             completion(false)

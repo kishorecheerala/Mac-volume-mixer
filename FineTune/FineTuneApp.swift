@@ -236,11 +236,12 @@ struct FineTuneApp: App {
         UNUserNotificationCenter.current().delegate = _appDelegate.wrappedValue
 
         // Request notification authorization (for device disconnect alerts)
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { granted, error in
-            if let error {
+        Task { @MainActor in
+            do {
+                _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert])
+            } catch {
                 logger.error("Notification authorization error: \(error.localizedDescription)")
             }
-            // If not granted, notifications will silently not appear - acceptable behavior
         }
 
         // Flush debounced settings + tear down the CGEventTap before dealloc.
