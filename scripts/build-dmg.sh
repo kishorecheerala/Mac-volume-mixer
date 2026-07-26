@@ -27,11 +27,7 @@ xcodebuild -exportArchive \
     -exportOptionsPlist "$PROJECT_DIR/ExportOptions.plist"
 
 echo "==> Creating DMG..."
-# create-dmg auto-generates professional layout with:
-# - App icon composited onto disk icon
-# - "Drag to Applications" layout
-# - Code signing
-npx create-dmg "$BUILD_DIR/FineTune.app" "$BUILD_DIR" --overwrite
+hdiutil create -volname "Mac Volume Mixer" -srcfolder "$BUILD_DIR/Mac Volume Mixer.app" -ov -format UDZO "$BUILD_DIR/Mac Volume Mixer.dmg"
 
 echo "==> Done!"
 echo "DMG created at: $BUILD_DIR/"

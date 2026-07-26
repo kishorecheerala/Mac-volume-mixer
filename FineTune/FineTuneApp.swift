@@ -73,7 +73,7 @@ struct FineTuneApp: App {
                 updateManager: updateManager
             )
         }
-        FluidMenuBarExtra("FineTune", image: launchIconImage, isInserted: $showMenuBarExtra) {
+        FluidMenuBarExtra("Mac Volume Mixer", image: launchIconImage, isInserted: $showMenuBarExtra) {
             menuBarContent
         }
     }

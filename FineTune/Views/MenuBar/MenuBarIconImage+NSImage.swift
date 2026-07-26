@@ -10,7 +10,7 @@ extension MenuBarIconImage {
     /// The status item is variable-length: icons of differing sizes resize it and shift every neighboring menu bar item.
     static let canvasSize = NSSize(width: 22, height: 18)
 
-    func nsImage(accessibilityDescription: String = "FineTune") -> NSImage? {
+    func nsImage(accessibilityDescription: String = "Mac Volume Mixer") -> NSImage? {
         let source: NSImage?
         switch self {
         case .systemSymbol(let name):
