@@ -258,35 +258,43 @@ final class ChromeTabAudioService {
         let volumeVal = tab.isMuted ? 0.0 : tab.volume
         let isMutedVal = tab.isMuted ? "true" : "false"
 
-        let jsString = "Array.from(document.querySelectorAll('video, audio')).forEach(function(m){ m.volume = \(volumeVal); m.muted = \(isMutedVal); });"
+        let jsString = """
+        (function() {
+            var vol = \(volumeVal);
+            var muted = \(isMutedVal);
+            var els = Array.from(document.querySelectorAll('video, audio'));
+            els.forEach(function(m) {
+                m.volume = vol;
+                m.muted = muted;
+            });
+        })();
+        """
 
-        if tab.discoverySource == .appleScript {
-            let scriptText = """
-            tell application "Google Chrome"
-                try
-                    execute tab id \(tab.tabID) of window \(tab.windowID) javascript "\(jsString)"
-                end try
-            end tell
-            """
-            Task.detached {
-                if let script = NSAppleScript(source: scriptText) {
-                    var err: NSDictionary?
-                    script.executeAndReturnError(&err)
-                }
-            }
-        } else if tab.discoverySource == .cdp {
-            // For CDP target, send HTTP POST or JS execution fallback
-            let scriptText = """
-            tell application "Google Chrome"
-                try
-                    execute tab id "\(tab.tabID)" javascript "\(jsString)"
-                end try
-            end tell
-            """
-            Task.detached {
-                if let script = NSAppleScript(source: scriptText) {
-                    var err: NSDictionary?
-                    script.executeAndReturnError(&err)
+        let escapedJS = jsString
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: " ")
+
+        let scriptText = """
+        tell application "Google Chrome"
+            repeat with w in windows
+                repeat with t in tabs of w
+                    try
+                        if (id of t as text) is "\(tab.tabID)" then
+                            execute t javascript "\(escapedJS)"
+                        end if
+                    end try
+                end repeat
+            end repeat
+        end tell
+        """
+
+        Task.detached {
+            if let script = NSAppleScript(source: scriptText) {
+                var err: NSDictionary?
+                script.executeAndReturnError(&err)
+                if let err {
+                    self.logger.warning("Error applying tab volume via AppleScript: \(err)")
                 }
             }
         }
