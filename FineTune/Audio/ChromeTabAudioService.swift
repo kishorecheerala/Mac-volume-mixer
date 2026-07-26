@@ -102,13 +102,13 @@ final class ChromeTabAudioService {
 
         isChromeRunning = true
 
-        // Try CDP first
-        if let cdpTabs = await fetchCDPTabs() {
+        // Try CDP first (must yield at least 1 tab, otherwise fallback to JXA)
+        if let cdpTabs = await fetchCDPTabs(), !cdpTabs.isEmpty {
             isCDPAvailable = true
             updateTabsList(with: cdpTabs)
         } else {
             isCDPAvailable = false
-            // Fallback to AppleScript
+            // Fallback to JXA
             let scriptTabs = await fetchAppleScriptTabs()
             updateTabsList(with: scriptTabs)
         }

@@ -911,7 +911,14 @@ struct MenuBarPopupView: View {
                     toggleEQ(for: displayableApp.id, scrollProxy: scrollProxy)
                 },
                 isFocused: hasKeyboardEngaged && selectedRow == .app(persistenceID: displayableApp.id),
-                chromeTabs: (app.bundleID == "com.google.Chrome" || app.name.contains("Chrome")) ? audioEngine.chromeTabAudioService.tabs : [],
+                chromeTabs: (
+                    (app.bundleID?.localizedCaseInsensitiveContains("chrome") == true) ||
+                    (app.bundleID?.localizedCaseInsensitiveContains("chromium") == true) ||
+                    (app.bundleID?.localizedCaseInsensitiveContains("brave") == true) ||
+                    app.name.localizedCaseInsensitiveContains("chrome") ||
+                    app.name.localizedCaseInsensitiveContains("chromium") ||
+                    app.name.localizedCaseInsensitiveContains("brave")
+                ) ? audioEngine.chromeTabAudioService.tabs : [],
                 onTabVolumeChange: { tabID, volume in
                     audioEngine.chromeTabAudioService.setVolume(for: tabID, volume: volume)
                 },
