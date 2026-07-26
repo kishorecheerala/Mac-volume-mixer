@@ -349,24 +349,8 @@ struct MenuBarPopupView: View {
             Divider()
                 .padding(.vertical, DesignTokens.Spacing.xs)
 
-            // Footer: support link + quit
+            // Footer: quit button
             HStack {
-                Button {
-                    NSWorkspace.shared.open(DesignTokens.Links.support)
-                } label: {
-                    Label("Donate", systemImage: isSupportHovered ? "heart.fill" : "heart")
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(isSupportHovered ? Color(nsColor: .systemPink) : DesignTokens.Colors.textTertiary)
-                .onHover { hovering in
-                    withAnimation(DesignTokens.Animation.hover) {
-                        isSupportHovered = hovering
-                    }
-                }
-                .accessibilityLabel("Donate to FineTune")
-                .help("Donate to FineTune")
-
                 Spacer()
 
                 Button {

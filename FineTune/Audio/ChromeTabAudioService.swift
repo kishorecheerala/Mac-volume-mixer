@@ -185,8 +185,14 @@ final class ChromeTabAudioService {
 
     private func fetchAppleScriptTabs() async -> [ChromeTabAudioItem] {
         return await Task.detached {
+            let appName = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome").first?.localizedName
+                ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.canary").first?.localizedName
+                ?? NSRunningApplication.runningApplications(withBundleIdentifier: "org.chromium.Chromium").first?.localizedName
+                ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.brave.Browser").first?.localizedName
+                ?? "Google Chrome"
+
             let scriptSource = """
-            tell application "Google Chrome"
+            tell application "\(appName)"
                 if not running then return ""
                 set resultList to ""
                 set winIdx to 1
@@ -275,8 +281,14 @@ final class ChromeTabAudioService {
             .replacingOccurrences(of: "\"", with: "\\\"")
             .replacingOccurrences(of: "\n", with: " ")
 
+        let appName = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome").first?.localizedName
+            ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.canary").first?.localizedName
+            ?? NSRunningApplication.runningApplications(withBundleIdentifier: "org.chromium.Chromium").first?.localizedName
+            ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.brave.Browser").first?.localizedName
+            ?? "Google Chrome"
+
         let scriptText = """
-        tell application "Google Chrome"
+        tell application "\(appName)"
             repeat with w in windows
                 repeat with t in tabs of w
                     try
