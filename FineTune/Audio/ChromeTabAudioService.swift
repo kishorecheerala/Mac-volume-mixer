@@ -181,47 +181,49 @@ final class ChromeTabAudioService {
         return result
     }
 
-    // MARK: - AppleScript Fallback Implementation
+    // MARK: - JXA (JavaScript for Automation) Fallback Implementation
+    // JXA is used instead of traditional AppleScript because when multiple Chrome
+    // instances are running (e.g. user's Chrome + a headless Chrome), AppleScript's
+    // `tell application "Google Chrome"` may target the wrong instance (the headless
+    // one with 0 windows). JXA's `Application("Google Chrome")` correctly resolves
+    // to the user's primary Chrome instance with actual windows and tabs.
 
     private func fetchAppleScriptTabs() async -> [ChromeTabAudioItem] {
         return await Task.detached {
-            let appName = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome").first?.localizedName
-                ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.canary").first?.localizedName
-                ?? NSRunningApplication.runningApplications(withBundleIdentifier: "org.chromium.Chromium").first?.localizedName
-                ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.brave.Browser").first?.localizedName
-                ?? "Google Chrome"
-
-            let scriptSource = """
-            tell application "\(appName)"
-                if not running then return ""
-                set resultList to ""
-                set winIdx to 1
-                repeat with w in windows
-                    set tabIdx to 1
-                    repeat with t in tabs of w
-                        try
-                            set tabTitle to title of t
-                            set tabURL to URL of t
-                            set tabID to id of t
-                            set resultList to resultList & (winIdx as text) & "|||" & (tabIdx as text) & "|||" & (tabID as text) & "|||" & tabTitle & "|||" & tabURL & "\n"
-                        end try
-                        set tabIdx to tabIdx + 1
-                    end repeat
-                    set winIdx to winIdx + 1
-                end repeat
-                return resultList
-            end tell
+            let jxaSource = """
+            ObjC.import('stdlib');
+            var chrome = Application('Google Chrome');
+            var wins = chrome.windows();
+            var result = [];
+            for (var wi = 0; wi < wins.length; wi++) {
+                var tabs = wins[wi].tabs();
+                for (var ti = 0; ti < tabs.length; ti++) {
+                    var t = tabs[ti];
+                    try {
+                        result.push((wi+1) + '|||' + (ti+1) + '|||' + t.id() + '|||' + t.title() + '|||' + t.url());
+                    } catch(e) {}
+                }
+            }
+            result.join('\\n');
             """
 
-            guard let script = NSAppleScript(source: scriptSource) else { return [] }
-            var errorInfo: NSDictionary?
-            let output = script.executeAndReturnError(&errorInfo)
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            task.arguments = ["-l", "JavaScript", "-e", jxaSource]
+            let pipe = Pipe()
+            task.standardOutput = pipe
+            task.standardError = Pipe()
 
-            if let errorInfo {
-                self.logger.warning("AppleScript tab execution info: \(errorInfo)")
+            do {
+                try task.run()
+                task.waitUntilExit()
+            } catch {
+                self.logger.warning("JXA tab discovery process error: \(error)")
+                return []
             }
 
-            guard let text = output.stringValue else { return [] }
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            guard let text = String(data: data, encoding: .utf8), !text.isEmpty else { return [] }
             return self.parseAppleScriptResponse(text)
         }.value
     }
@@ -264,50 +266,35 @@ final class ChromeTabAudioService {
         let volumeVal = tab.isMuted ? 0.0 : tab.volume
         let isMutedVal = tab.isMuted ? "true" : "false"
 
-        let jsString = """
-        (function() {
-            var vol = \(volumeVal);
-            var muted = \(isMutedVal);
-            var els = Array.from(document.querySelectorAll('video, audio'));
-            els.forEach(function(m) {
-                m.volume = vol;
-                m.muted = muted;
-            });
-        })();
-        """
-
-        let escapedJS = jsString
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-            .replacingOccurrences(of: "\n", with: " ")
-
-        let appName = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome").first?.localizedName
-            ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.canary").first?.localizedName
-            ?? NSRunningApplication.runningApplications(withBundleIdentifier: "org.chromium.Chromium").first?.localizedName
-            ?? NSRunningApplication.runningApplications(withBundleIdentifier: "com.brave.Browser").first?.localizedName
-            ?? "Google Chrome"
-
-        let scriptText = """
-        tell application "\(appName)"
-            repeat with w in windows
-                repeat with t in tabs of w
-                    try
-                        if (id of t as text) is "\(tab.tabID)" then
-                            execute t javascript "\(escapedJS)"
-                        end if
-                    end try
-                end repeat
-            end repeat
-        end tell
+        // JXA script to set volume/mute on a specific tab by its ID
+        let jxaSource = """
+        var chrome = Application('Google Chrome');
+        var wins = chrome.windows();
+        for (var wi = 0; wi < wins.length; wi++) {
+            var tabs = wins[wi].tabs();
+            for (var ti = 0; ti < tabs.length; ti++) {
+                var t = tabs[ti];
+                try {
+                    if (String(t.id()) === '\(tab.tabID)') {
+                        t.execute({javascript: "(function(){ var els = Array.from(document.querySelectorAll('video, audio')); els.forEach(function(m){ m.volume = \(volumeVal); m.muted = \(isMutedVal); }); })()"});
+                    }
+                } catch(e) {}
+            }
+        }
         """
 
         Task.detached {
-            if let script = NSAppleScript(source: scriptText) {
-                var err: NSDictionary?
-                script.executeAndReturnError(&err)
-                if let err {
-                    self.logger.warning("Error applying tab volume via AppleScript: \(err)")
-                }
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            task.arguments = ["-l", "JavaScript", "-e", jxaSource]
+            task.standardOutput = Pipe()
+            task.standardError = Pipe()
+
+            do {
+                try task.run()
+                task.waitUntilExit()
+            } catch {
+                self.logger.warning("Error applying tab volume via JXA: \(error)")
             }
         }
     }
