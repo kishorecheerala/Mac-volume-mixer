@@ -93,7 +93,7 @@ final class MenuBarPopupController: MenuBarPopupControlling {
 
         return NSApp.windows
             .filter { $0.className.contains("NSStatusBarWindow") }
-            .compactMap(Self.extractStatusItem(from:))
+            .compactMap { Self.extractStatusItem(from: $0) }
             // Multi-display setups with "Displays have separate Spaces" enabled produce
             // one NSStatusBarWindow per display; the inactive ones return an
             // `NSStatusItemReplicant` (a subclass of NSStatusItem). Skip replicants —

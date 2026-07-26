@@ -22,7 +22,7 @@ final class HUDWindowController: MediaKeyHUDPresenting {
     // MARK: - Suppression-degraded tracking
 
     private var lastSwallowedKeyTime: DispatchTime?
-    private var settingsChangedObserver: NSObjectProtocol?
+    private nonisolated(unsafe) var settingsChangedObserver: NSObjectProtocol?
 
     var hideDelayOverride: Duration?
     var frameProvider: () -> NSRect? = { NSScreen.main?.visibleFrame ?? NSScreen.screens.first?.visibleFrame }
@@ -40,14 +40,16 @@ final class HUDWindowController: MediaKeyHUDPresenting {
         subscribeToSettingsChangedNotification()
     }
 
-    isolated deinit {
+    deinit {
         if let observer = settingsChangedObserver {
             DistributedNotificationCenter.default().removeObserver(observer)
         }
         // Prefer shutdown() for synchronous teardown during willTerminate; this
         // deinit safety-net only fires for objects released without that call.
         if let panel {
-            panel.orderOut(nil)
+            Task { @MainActor [panel] in
+                panel.orderOut(nil)
+            }
         }
     }
 

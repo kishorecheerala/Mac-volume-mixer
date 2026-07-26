@@ -35,8 +35,8 @@ final class MediaKeyMonitor {
 
     // MARK: - Tap state
 
-    private var tap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
+    private nonisolated(unsafe) var tap: CFMachPort?
+    private nonisolated(unsafe) var runLoopSource: CFRunLoopSource?
 
     /// Second `.tapDisabledBy*` inside the watchdog window marks the feature offline.
     private var disableWatchdogTask: Task<Void, Never>?
@@ -48,7 +48,7 @@ final class MediaKeyMonitor {
     private var ghostTapProbeTask: Task<Void, Never>?
 
     /// CGEventTaps are per-session; wake leaves them enabled-but-inert.
-    private var workspaceObservers: [NSObjectProtocol] = []
+    private nonisolated(unsafe) var workspaceObservers: [NSObjectProtocol] = []
 
     var onRunLoopSourceRemoved: (() -> Void)?
 
@@ -78,7 +78,7 @@ final class MediaKeyMonitor {
         subscribeToWorkspaceLifecycle()
     }
 
-    isolated deinit {
+    deinit {
         // C callback holds an unretained pointer to self; runloop source must not outlive us.
         if let tap = tap {
             CGEvent.tapEnable(tap: tap, enable: false)

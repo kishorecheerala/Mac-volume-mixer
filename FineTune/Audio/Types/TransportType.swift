@@ -3,7 +3,7 @@ import AudioToolbox
 
 /// Represents how an audio device connects to the system.
 /// See kAudioDeviceTransportType* constants in AudioHardware.h
-nonisolated enum TransportType: Sendable, Hashable, CustomStringConvertible {
+enum TransportType: Sendable, Hashable, CustomStringConvertible {
     case builtIn
     case usb
     case bluetooth

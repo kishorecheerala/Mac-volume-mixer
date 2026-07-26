@@ -4,7 +4,7 @@ import Foundation
 
 // MARK: - Device List
 
-nonisolated extension AudioObjectID {
+extension AudioObjectID {
     static func readDeviceList() throws -> [AudioDeviceID] {
         try AudioObjectID.system.readArray(
             kAudioHardwarePropertyDevices,

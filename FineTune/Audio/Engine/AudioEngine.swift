@@ -16,6 +16,7 @@ final class AudioEngine {
     let autoEQProfileManager: AutoEQProfileManager
     let permission: AudioRecordingPermission
     let appListCoordinator: AppListCoordinator
+    let chromeTabAudioService: ChromeTabAudioService
 
     #if !APP_STORE
     let ddcController: DDCController
@@ -186,6 +187,7 @@ final class AudioEngine {
         let manager = settingsManager
         self.settingsManager = manager
         self.appListCoordinator = AppListCoordinator(settingsManager: manager)
+        self.chromeTabAudioService = ChromeTabAudioService()
         self.autoEQProfileManager = autoEQProfileManager
         self.volumeState = VolumeState(settingsManager: manager)
         self.isAliveCheck = isAlive ?? { $0.isDeviceAlive() }
@@ -283,6 +285,9 @@ final class AudioEngine {
                 self.registerNewDevicesInPriority()
                 // Seed the confirmed default from whatever macOS has at startup
                 self.lastConfirmedDefaultUID = self.deviceVolumeMonitor.defaultDeviceUID
+                if manager.appSettings.granularChromeTabVolumeEnabled {
+                    self.chromeTabAudioService.startPolling()
+                }
                 if manager.appSettings.lockInputDevice {
                     self.restoreLockedInputDevice()
                 }
@@ -1312,22 +1317,22 @@ final class AudioEngine {
             appDeviceRouting[pid] = targetUID
         }
 
-        var tapsToSwitch: [(app: AudioApp, tap: any ProcessTapControlling)] = []
+        var tapsToSwitch: [(id: pid_t, name: String, tap: any ProcessTapControlling)] = []
         for app in apps {
             guard followsDefault.contains(app.id), let tap = taps[app.id] else { continue }
-            tapsToSwitch.append((app, tap))
+            tapsToSwitch.append((app.id, app.name, tap))
         }
         guard !tapsToSwitch.isEmpty else { return }
 
-        Task {
-            for (app, tap) in tapsToSwitch {
+        Task { @MainActor in
+            for (id, name, tap) in tapsToSwitch {
                 do {
                     let preferredTapSourceUID = self.preferredTapSourceDeviceUID(forOutputUIDs: [targetUID], isFollowsDefault: true)
                     try await tap.switchDevice(to: targetUID, preferredTapSourceDeviceUID: preferredTapSourceUID)
-                    self.applyTapOutputState(to: tap, for: app.id, deviceUIDs: [targetUID])
+                    self.applyTapOutputState(to: tap, for: id, deviceUIDs: [targetUID])
                     self.applyAutoEQToTap(tap)
                 } catch {
-                    self.logger.error("Failed to switch \(app.name) to \(targetUID): \(error.localizedDescription)")
+                    self.logger.error("Failed to switch \(name) to \(targetUID): \(error.localizedDescription)")
                 }
             }
         }

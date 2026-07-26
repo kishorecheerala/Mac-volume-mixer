@@ -1,7 +1,7 @@
 // FineTune/Audio/Keys/MediaKeyEventDecoder.swift
 import Foundation
 
-nonisolated enum MediaKeyEvent: Equatable {
+enum MediaKeyEvent: Equatable {
     case volumeUp(isRepeat: Bool)
     case volumeDown(isRepeat: Bool)
     case muteToggle

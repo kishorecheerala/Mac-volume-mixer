@@ -4,7 +4,7 @@ import Foundation
 
 // MARK: - Device Information
 
-nonisolated extension AudioDeviceID {
+extension AudioDeviceID {
     func readDeviceName() throws -> String {
         try readString(kAudioObjectPropertyName)
     }
@@ -25,7 +25,7 @@ nonisolated extension AudioDeviceID {
 
 // MARK: - Tap Properties
 
-nonisolated extension AudioObjectID {
+extension AudioObjectID {
     func readAudioTapStreamBasicDescription() throws -> AudioStreamBasicDescription {
         try read(kAudioTapPropertyFormat, defaultValue: AudioStreamBasicDescription())
     }
@@ -33,7 +33,7 @@ nonisolated extension AudioObjectID {
 
 // MARK: - Process Properties
 
-nonisolated extension AudioObjectID {
+extension AudioObjectID {
     func readProcessPID() throws -> pid_t {
         try read(kAudioProcessPropertyPID, defaultValue: pid_t(0))
     }

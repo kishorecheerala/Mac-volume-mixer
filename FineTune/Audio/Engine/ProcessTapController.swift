@@ -145,11 +145,11 @@ final class ProcessTapController: ProcessTapControlling {
     var currentDeviceUID: String? { currentDeviceUIDs.first }
 
     // Core Audio resources (primary tap) — TapResources enforces correct teardown order
-    private var primaryResources = TapResources()
+    private nonisolated(unsafe) var primaryResources = TapResources()
     private var activated = false
 
     // Secondary tap for crossfade
-    private var secondaryResources = TapResources()
+    private nonisolated(unsafe) var secondaryResources = TapResources()
 
     /// Guard against re-entrant crossfade (ORCH-001)
     private var isSwitching = false
@@ -867,8 +867,9 @@ final class ProcessTapController: ProcessTapControlling {
         _invalidating = false
     }
 
-    isolated deinit {
-        invalidate()
+    deinit {
+        secondaryResources.destroyAsync()
+        primaryResources.destroyAsync()
     }
 
     // MARK: - Crossfade Operations

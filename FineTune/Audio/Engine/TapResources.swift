@@ -12,7 +12,7 @@ import os
 /// 4. Destroy process tap (AudioHardwareDestroyProcessTap)
 ///
 /// Violating this order can leak HAL resources or crash on shutdown.
-nonisolated struct TapResources {
+struct TapResources {
     private static let logger = Logger(subsystem: "com.finetuneapp.FineTune", category: "TapResources")
 
     var tapID: AudioObjectID = .unknown

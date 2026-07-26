@@ -47,7 +47,7 @@ private nonisolated let logger = Logger(subsystem: "com.finetuneapp.FineTune", c
 ///
 /// Uses a fixed-size C buffer (not Swift collections) so the signal handler
 /// only touches async-signal-safe memory.
-nonisolated enum CrashGuard {
+enum CrashGuard {
     /// Allocates the tracking buffer and installs crash signal handlers.
     /// Call once on app startup, before creating any taps.
     static func install() {

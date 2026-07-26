@@ -5,12 +5,12 @@
 
 import Foundation
 
-nonisolated enum MenuBarIconImage: Equatable {
+enum MenuBarIconImage: Equatable {
     case systemSymbol(String)
     case asset(String)
 }
 
-nonisolated enum VolumeBucket: Equatable {
+enum VolumeBucket: Equatable {
     case zero
     case low
     case mid
@@ -38,7 +38,7 @@ nonisolated enum VolumeBucket: Equatable {
     }
 }
 
-nonisolated enum MenuBarIconState: Equatable {
+enum MenuBarIconState: Equatable {
     case speakerVolume(VolumeBucket)
     case speakerMuted
     case device(symbol: String)

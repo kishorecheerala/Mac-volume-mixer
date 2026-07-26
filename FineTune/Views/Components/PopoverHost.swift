@@ -60,9 +60,9 @@ struct PopoverHost<Content: View>: NSViewRepresentable {
         @Binding var isPresented: Bool
         var panel: NSPanel?
         var hostingView: NSHostingView<AnyView>?
-        var localEventMonitor: Any?
-        var globalEventMonitor: Any?
-        var appDeactivateObserver: NSObjectProtocol?
+        nonisolated(unsafe) var localEventMonitor: Any?
+        nonisolated(unsafe) var globalEventMonitor: Any?
+        nonisolated(unsafe) var appDeactivateObserver: NSObjectProtocol?
         weak var parentWindow: NSWindow?
 
         init(isPresented: Binding<Bool>) {
@@ -222,7 +222,7 @@ struct PopoverHost<Content: View>: NSViewRepresentable {
             }
         }
 
-        isolated deinit {
+        deinit {
             if let monitor = localEventMonitor {
                 NSEvent.removeMonitor(monitor)
             }

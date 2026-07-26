@@ -923,7 +923,20 @@ struct MenuBarPopupView: View {
                 onEQToggle: {
                     toggleEQ(for: displayableApp.id, scrollProxy: scrollProxy)
                 },
-                isFocused: hasKeyboardEngaged && selectedRow == .app(persistenceID: displayableApp.id)
+                isFocused: hasKeyboardEngaged && selectedRow == .app(persistenceID: displayableApp.id),
+                chromeTabs: (app.bundleID == "com.google.Chrome" || app.name.contains("Chrome")) ? audioEngine.chromeTabAudioService.tabs : [],
+                onTabVolumeChange: { tabID, volume in
+                    audioEngine.chromeTabAudioService.setVolume(for: tabID, volume: volume)
+                },
+                onTabMuteToggle: { tabID in
+                    audioEngine.chromeTabAudioService.toggleMute(for: tabID)
+                },
+                focusedTabID: {
+                    if case .chromeTab(let tabID) = selectedRow {
+                        return tabID
+                    }
+                    return nil
+                }()
             )
             .id(PopupKeyboardNavModel.RowID.app(persistenceID: displayableApp.id))
         }
@@ -1197,6 +1210,8 @@ struct MenuBarPopupView: View {
         navModel.syncOrder(
             activeDevices: activeDevices,
             appPersistenceIDs: audioEngine.displayableApps.map(\.id),
+            chromeTabs: audioEngine.chromeTabAudioService.tabs,
+            isChromeExpanded: true,
             isEditingPriority: isEditingDevicePriority
         )
     }
@@ -1336,6 +1351,13 @@ struct MenuBarPopupView: View {
                 setMute: { audioEngine.setMuteForInactive(identifier: persistenceID, to: $0) }
             )
             return .handled
+        case .chromeTab(let tabID):
+            if let tab = audioEngine.chromeTabAudioService.tabs.first(where: { $0.id == tabID }) {
+                let nextVol = Float(max(0.0, min(1.0, Double(tab.volume) + delta)))
+                audioEngine.chromeTabAudioService.setVolume(for: tabID, volume: nextVol)
+                return .handled
+            }
+            return .ignored
         case .device(let uid):
             if showingInputDevices {
                 guard let device = sortedInputDevices.first(where: { $0.uid == uid }) else {
@@ -1383,6 +1405,9 @@ struct MenuBarPopupView: View {
     private func toggleMute(for target: PopupKeyboardNavModel.RowID?) -> KeyPress.Result {
         guard let target else { return .ignored }
         switch target {
+        case .chromeTab(let tabID):
+            audioEngine.chromeTabAudioService.toggleMute(for: tabID)
+            return .handled
         case .app(let persistenceID):
             if let app = audioEngine.apps.first(where: { $0.persistenceIdentifier == persistenceID }) {
                 audioEngine.toggleMute(for: app)
@@ -1412,6 +1437,9 @@ struct MenuBarPopupView: View {
     private func activate(_ target: PopupKeyboardNavModel.RowID?) -> KeyPress.Result {
         guard let target else { return .ignored }
         switch target {
+        case .chromeTab(let tabID):
+            audioEngine.chromeTabAudioService.toggleMute(for: tabID)
+            return .handled
         case .device(let uid):
             if showingInputDevices {
                 guard let device = sortedInputDevices.first(where: { $0.uid == uid }) else {

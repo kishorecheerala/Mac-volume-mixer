@@ -1,4 +1,4 @@
-nonisolated struct LoudnessEqualizerSettings: Codable, Equatable, Sendable {
+struct LoudnessEqualizerSettings: Codable, Equatable, Sendable {
     var targetLoudnessDb: Float = -12
     var maxBoostDb: Float = 6
     var maxCutDb: Float = 4

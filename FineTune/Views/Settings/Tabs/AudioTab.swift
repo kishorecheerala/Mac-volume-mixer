@@ -46,6 +46,13 @@ struct AudioTab: View {
         .onChange(of: settings.appSettings.loudnessEqualizationEnabled) { _, newValue in
             audioEngine.setLoudnessEqualizationEnabled(newValue)
         }
+        .onChange(of: settings.appSettings.granularChromeTabVolumeEnabled) { _, newValue in
+            if newValue {
+                audioEngine.chromeTabAudioService.startPolling()
+            } else {
+                audioEngine.chromeTabAudioService.stopPolling()
+            }
+        }
     }
 
     // MARK: - Volume
@@ -68,6 +75,16 @@ struct AudioTab: View {
                 description: "Boost low frequencies at low volume"
             ) {
                 Toggle("", isOn: unifiedLoudnessToggleBinding)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .labelsHidden()
+            }
+            SettingsRowDivider()
+            SettingsRow(
+                "Granular Chrome Tab Volume",
+                description: "Control individual Chrome tab and window volumes"
+            ) {
+                Toggle("", isOn: $settings.appSettings.granularChromeTabVolumeEnabled)
                     .toggleStyle(.switch)
                     .controlSize(.small)
                     .labelsHidden()

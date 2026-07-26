@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - AudioObjectID Core Extensions
 
-nonisolated extension AudioObjectID {
+extension AudioObjectID {
     static let unknown = AudioObjectID(kAudioObjectUnknown)
     static let system = AudioObjectID(kAudioObjectSystemObject)
 
@@ -18,7 +18,7 @@ nonisolated extension AudioObjectID {
 
 // MARK: - Property Reading
 
-nonisolated extension AudioObjectID {
+extension AudioObjectID {
     func read<T: BitwiseCopyable>(
         _ selector: AudioObjectPropertySelector,
         scope: AudioScope = .global,
@@ -110,7 +110,7 @@ nonisolated extension AudioObjectID {
 
 // MARK: - Array Property Reading
 
-nonisolated extension AudioObjectID {
+extension AudioObjectID {
     func readArray<T: BitwiseCopyable>(
         _ selector: AudioObjectPropertySelector,
         scope: AudioScope = .global,

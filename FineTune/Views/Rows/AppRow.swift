@@ -34,6 +34,10 @@ struct AppRow: View {
     let isEQExpanded: Bool
     let onEQToggle: () -> Void
     let isFocused: Bool
+    let chromeTabs: [ChromeTabAudioItem]
+    let onTabVolumeChange: (String, Float) -> Void
+    let onTabMuteToggle: (String) -> Void
+    let focusedTabID: String?
 
     @State private var isIconHovered = false
     @State private var localEQSettings: EQSettings
@@ -68,7 +72,11 @@ struct AppRow: View {
         onRenameUserPreset: @escaping (UUID, String) -> Void = { _, _ in },
         isEQExpanded: Bool = false,
         onEQToggle: @escaping () -> Void = {},
-        isFocused: Bool = false
+        isFocused: Bool = false,
+        chromeTabs: [ChromeTabAudioItem] = [],
+        onTabVolumeChange: @escaping (String, Float) -> Void = { _, _ in },
+        onTabMuteToggle: @escaping (String) -> Void = { _ in },
+        focusedTabID: String? = nil
     ) {
         self.app = app
         self.volume = volume
@@ -100,7 +108,10 @@ struct AppRow: View {
         self.isEQExpanded = isEQExpanded
         self.onEQToggle = onEQToggle
         self.isFocused = isFocused
-        // Initialize local EQ state for reactive UI updates
+        self.chromeTabs = chromeTabs
+        self.onTabVolumeChange = onTabVolumeChange
+        self.onTabMuteToggle = onTabMuteToggle
+        self.focusedTabID = focusedTabID
         self._localEQSettings = State(initialValue: eqSettings)
     }
 
@@ -180,26 +191,46 @@ struct AppRow: View {
             }
             .frame(height: DesignTokens.Dimensions.rowContentHeight)
         } expandedContent: {
-            // EQ panel - shown when expanded
-            // SwiftUI calculates natural height via conditional rendering
-            EQPanelView(
-                settings: $localEQSettings,
-                userPresets: userPresets,
-                onPresetSelected: { preset in
-                    localEQSettings = preset.settings
-                    onEQChange(preset.settings)
-                },
-                onUserPresetSelected: { userPreset in
-                    localEQSettings = userPreset.settings
-                    onUserPresetSelected(userPreset)
-                },
-                onSettingsChanged: { settings in
-                    onEQChange(settings)
-                },
-                onSavePreset: onSavePreset,
-                onDeleteUserPreset: onDeleteUserPreset,
-                onRenameUserPreset: onRenameUserPreset
-            )
+            VStack(alignment: .leading, spacing: 6) {
+                if !chromeTabs.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("CHROME TABS & WINDOWS")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(DesignTokens.Colors.textTertiary)
+                            .padding(.leading, 4)
+
+                        ForEach(chromeTabs) { tab in
+                            ChromeTabRow(
+                                tab: tab,
+                                onVolumeChange: { newVol in onTabVolumeChange(tab.id, newVol) },
+                                onMuteToggle: { onTabMuteToggle(tab.id) },
+                                isFocused: focusedTabID == tab.id
+                            )
+                        }
+                    }
+                    .padding(.bottom, 4)
+                }
+
+                // EQ panel - shown when expanded
+                EQPanelView(
+                    settings: $localEQSettings,
+                    userPresets: userPresets,
+                    onPresetSelected: { preset in
+                        localEQSettings = preset.settings
+                        onEQChange(preset.settings)
+                    },
+                    onUserPresetSelected: { userPreset in
+                        localEQSettings = userPreset.settings
+                        onUserPresetSelected(userPreset)
+                    },
+                    onSettingsChanged: { settings in
+                        onEQChange(settings)
+                    },
+                    onSavePreset: onSavePreset,
+                    onDeleteUserPreset: onDeleteUserPreset,
+                    onRenameUserPreset: onRenameUserPreset
+                )
+            }
             .padding(.top, DesignTokens.Spacing.sm)
         }
         .onChange(of: eqSettings) { _, newValue in

@@ -7,6 +7,7 @@ final class PopupKeyboardNavModel {
     enum RowID: Hashable {
         case device(uid: String)
         case app(persistenceID: String)
+        case chromeTab(tabID: String)
     }
 
     private(set) var orderedRowIDs: [RowID] = []
@@ -14,6 +15,8 @@ final class PopupKeyboardNavModel {
     func syncOrder(
         activeDevices: [AudioDevice],
         appPersistenceIDs: [String],
+        chromeTabs: [ChromeTabAudioItem] = [],
+        isChromeExpanded: Bool = true,
         isEditingPriority: Bool
     ) {
         guard !isEditingPriority else {
@@ -21,12 +24,17 @@ final class PopupKeyboardNavModel {
             return
         }
         var next: [RowID] = []
-        next.reserveCapacity(activeDevices.count + appPersistenceIDs.count)
+        next.reserveCapacity(activeDevices.count + appPersistenceIDs.count + chromeTabs.count)
         for device in activeDevices {
             next.append(.device(uid: device.uid))
         }
         for id in appPersistenceIDs {
             next.append(.app(persistenceID: id))
+            if isChromeExpanded && (id.contains("Chrome") || id.lowercased().contains("chrome")) {
+                for tab in chromeTabs {
+                    next.append(.chromeTab(tabID: tab.id))
+                }
+            }
         }
         orderedRowIDs = next
     }
@@ -61,3 +69,4 @@ final class PopupKeyboardNavModel {
         return orderedRowIDs.first
     }
 }
+

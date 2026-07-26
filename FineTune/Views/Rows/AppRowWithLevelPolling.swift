@@ -34,6 +34,10 @@ struct AppRowWithLevelPolling: View {
     let isEQExpanded: Bool
     let onEQToggle: () -> Void
     let isFocused: Bool
+    let chromeTabs: [ChromeTabAudioItem]
+    let onTabVolumeChange: (String, Float) -> Void
+    let onTabMuteToggle: (String) -> Void
+    let focusedTabID: String?
 
     @State private var displayLevel: Float = 0
     @State private var levelTimer: Timer?
@@ -69,7 +73,11 @@ struct AppRowWithLevelPolling: View {
         onRenameUserPreset: @escaping (UUID, String) -> Void = { _, _ in },
         isEQExpanded: Bool = false,
         onEQToggle: @escaping () -> Void = {},
-        isFocused: Bool = false
+        isFocused: Bool = false,
+        chromeTabs: [ChromeTabAudioItem] = [],
+        onTabVolumeChange: @escaping (String, Float) -> Void = { _, _ in },
+        onTabMuteToggle: @escaping (String) -> Void = { _ in },
+        focusedTabID: String? = nil
     ) {
         self.app = app
         self.volume = volume
@@ -102,6 +110,10 @@ struct AppRowWithLevelPolling: View {
         self.isEQExpanded = isEQExpanded
         self.onEQToggle = onEQToggle
         self.isFocused = isFocused
+        self.chromeTabs = chromeTabs
+        self.onTabVolumeChange = onTabVolumeChange
+        self.onTabMuteToggle = onTabMuteToggle
+        self.focusedTabID = focusedTabID
     }
 
     var body: some View {
@@ -135,7 +147,11 @@ struct AppRowWithLevelPolling: View {
             onRenameUserPreset: onRenameUserPreset,
             isEQExpanded: isEQExpanded,
             onEQToggle: onEQToggle,
-            isFocused: isFocused
+            isFocused: isFocused,
+            chromeTabs: chromeTabs,
+            onTabVolumeChange: onTabVolumeChange,
+            onTabMuteToggle: onTabMuteToggle,
+            focusedTabID: focusedTabID
         )
         .onAppear {
             if isPopupVisible {
