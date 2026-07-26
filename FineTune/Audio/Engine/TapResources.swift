@@ -13,7 +13,7 @@ import os
 ///
 /// Violating this order can leak HAL resources or crash on shutdown.
 struct TapResources {
-    private static let logger = Logger(subsystem: "com.finetuneapp.FineTune", category: "TapResources")
+    private static let logger = Logger(subsystem: "com.finetuneapp.MacVolumeMixer", category: "TapResources")
 
     var tapID: AudioObjectID = .unknown
     var aggregateDeviceID: AudioObjectID = .unknown

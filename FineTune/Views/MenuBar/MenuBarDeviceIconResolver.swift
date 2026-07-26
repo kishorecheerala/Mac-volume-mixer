@@ -35,7 +35,7 @@ struct MenuBarDeviceIconResolver {
         let devicesByUID = Dictionary(outputDevices.map { ($0.uid, $0) }, uniquingKeysWith: { _, latest in latest })
 
         // Match macOS's sound menu: the persistent icon represents the device
-        // currently receiving system audio, even if FineTune's saved priority
+        // currently receiving system audio, even if Mac Volume Mixer's saved priority
         // order has another connected device above it.
         if let defaultDevice = outputDevices.first(where: { $0.id == defaultDeviceID }),
            isDeviceAvailable(defaultDevice) {

@@ -38,7 +38,7 @@ private nonisolated func crashSignalHandler(_ sig: Int32) {
     raise(sig)
 }
 
-private nonisolated let logger = Logger(subsystem: "com.finetuneapp.FineTune", category: "CrashGuard")
+private nonisolated let logger = Logger(subsystem: "com.finetuneapp.MacVolumeMixer", category: "CrashGuard")
 
 // MARK: - Public API
 

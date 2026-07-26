@@ -50,7 +50,7 @@ final class AudioEngine {
     private var staleCleanupTask: Task<Void, Never>?  // Debounced cleanup scheduling
     private var healthMonitorTask: Task<Void, Never>?  // Periodic tap health monitor
     private var tapRecoveryCooldownUntil: [pid_t: Date] = [:]  // Prevents tap recreation thrashing
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "AudioEngine")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "AudioEngine")
 
     // MARK: - Priority State Machine
 

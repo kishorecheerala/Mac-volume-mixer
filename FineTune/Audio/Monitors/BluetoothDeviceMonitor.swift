@@ -29,14 +29,14 @@ final class BluetoothDeviceMonitor {
     // MARK: - Private
 
     private let logger = Logger(
-        subsystem: "com.finetuneapp.FineTune",
+        subsystem: "com.finetuneapp.MacVolumeMixer",
         category: "BluetoothDeviceMonitor"
     )
 
     /// Dedicated serial queue for all IOBluetooth IPC.
     /// Serializes calls to avoid concurrent Mach port access and provides a stable
     /// thread context (unlike Task.detached which uses the cooperative thread pool).
-    private nonisolated static let btQueue = DispatchQueue(label: "com.finetuneapp.bluetooth")
+    private nonisolated static let btQueue = DispatchQueue(label: "com.macvolumemixer.bluetooth")
 
     /// Pending timeout tasks keyed by MAC address.
     private var timeoutTasks: [String: Task<Void, Never>] = [:]

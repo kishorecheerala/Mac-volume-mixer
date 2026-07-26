@@ -38,7 +38,7 @@ struct GeneralTab: View {
         SettingsSection("General") {
             SettingsRow(
                 "Launch at Login",
-                description: "Start FineTune when you log in"
+                description: "Start Mac Volume Mixer when you log in"
             ) {
                 Toggle("", isOn: $settings.appSettings.launchAtLogin)
                     .toggleStyle(.switch)
@@ -71,7 +71,7 @@ struct GeneralTab: View {
         SettingsSection("Menu Bar") {
             SettingsRow(
                 "Icon Style",
-                description: "How FineTune appears in your menu bar"
+                description: "How Mac Volume Mixer appears in your menu bar"
             ) {
                 IconStyleSegmentedControl(selection: $settings.appSettings.menuBarIconStyle)
             }

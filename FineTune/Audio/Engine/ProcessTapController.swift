@@ -221,7 +221,7 @@ final class ProcessTapController: ProcessTapControlling {
         self.targetDeviceUIDs = targetDeviceUIDs
         self.deviceMonitor = deviceMonitor
         self.preferredTapSourceDeviceUID = preferredTapSourceDeviceUID
-        self.logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "ProcessTapController(\(app.name))")
+        self.logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "ProcessTapController(\(app.name))")
     }
 
     /// Convenience initializer for single device output.

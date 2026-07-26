@@ -5,7 +5,7 @@ import FluidMenuBarExtra
 import AppKit
 import os
 
-private let logger = Logger(subsystem: "com.finetuneapp.FineTune", category: "App")
+private let logger = Logger(subsystem: "com.finetuneapp.MacVolumeMixer", category: "App")
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -208,7 +208,7 @@ struct FineTuneApp: App {
         // status item has been materialized before any hotkey can fire.
         let popupController = MenuBarPopupController()
         let resolver = TargetAppResolver(
-            ownBundleID: Bundle.main.bundleIdentifier ?? "com.finetuneapp.FineTune"
+            ownBundleID: Bundle.main.bundleIdentifier ?? "com.finetuneapp.MacVolumeMixer"
         )
         resolver.start()
         let registry = ShortcutsRegistry(

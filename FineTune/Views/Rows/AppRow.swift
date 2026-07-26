@@ -116,114 +116,95 @@ struct AppRow: View {
     }
 
     var body: some View {
-        ExpandableGlassRow(isExpanded: isEQExpanded || !chromeTabs.isEmpty, isFocused: isFocused) {
-            // Header: Main row content (always visible)
-            HStack(spacing: DesignTokens.Spacing.sm) {
-                // VU Meter
-                VUMeter(level: audioLevel, isMuted: isMutedExternal || volume == 0)
+        VStack(spacing: 0) {
+            ExpandableGlassRow(isExpanded: isEQExpanded, isFocused: isFocused) {
+                // Header: Main row content (always visible)
+                HStack(spacing: DesignTokens.Spacing.sm) {
+                    // VU Meter
+                    VUMeter(level: audioLevel, isMuted: isMutedExternal || volume == 0)
 
-                // App icon - clickable to activate app
-                Button(action: onAppActivate) {
-                    Image(nsImage: app.icon)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: DesignTokens.Dimensions.rowContentHeight - 4, height: DesignTokens.Dimensions.rowContentHeight - 4)
-                        .opacity(isIconHovered ? 0.7 : 1.0)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Open \(app.name)")
-                .onHover { hovering in
-                    isIconHovered = hovering
-                    if hovering {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
+                    // App icon - clickable to activate app
+                    Button(action: onAppActivate) {
+                        Image(nsImage: app.icon)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: DesignTokens.Dimensions.rowContentHeight - 4, height: DesignTokens.Dimensions.rowContentHeight - 4)
+                            .opacity(isIconHovered ? 0.7 : 1.0)
                     }
-                }
-
-                // App name + optional routing subtitle (hidden when the app is on
-                // system default; the same VStack-with-subtitle pattern as device
-                // rows' AutoEQ subtitle).
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 6) {
-                        Text(app.name)
-                            .font(DesignTokens.Typography.rowName)
-                            .lineLimit(1)
-                            .help(app.name)
-
-                        if !chromeTabs.isEmpty {
-                            Text("\(chromeTabs.count) tab\(chromeTabs.count == 1 ? "" : "s")")
-                                .font(.system(size: 9, weight: .bold))
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(DesignTokens.Colors.accentPrimary.opacity(0.2))
-                                .foregroundStyle(DesignTokens.Colors.accentPrimary)
-                                .clipShape(Capsule())
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Open \(app.name)")
+                    .onHover { hovering in
+                        isIconHovered = hovering
+                        if hovering {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
                         }
                     }
 
-                    if let subtitle = DevicePicker.routingSubtitle(
+                    // App name + optional routing subtitle (hidden when the app is on
+                    // system default; the same VStack-with-subtitle pattern as device
+                    // rows' AutoEQ subtitle).
+                    VStack(alignment: .leading, spacing: 1) {
+                        HStack(spacing: 6) {
+                            Text(app.name)
+                                .font(DesignTokens.Typography.rowName)
+                                .lineLimit(1)
+                                .help(app.name)
+
+                            if !chromeTabs.isEmpty {
+                                Text("\(chromeTabs.count) tab\(chromeTabs.count == 1 ? "" : "s")")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(DesignTokens.Colors.accentPrimary.opacity(0.2))
+                                    .foregroundStyle(DesignTokens.Colors.accentPrimary)
+                                    .clipShape(Capsule())
+                            }
+                        }
+
+                        if let subtitle = DevicePicker.routingSubtitle(
+                            devices: devices,
+                            selectedDeviceUID: selectedDeviceUID,
+                            selectedDeviceUIDs: selectedDeviceUIDs,
+                            isFollowingDefault: isFollowingDefault,
+                            mode: deviceSelectionMode
+                        ) {
+                            Text(subtitle)
+                                .font(.system(size: 9))
+                                .foregroundStyle(DesignTokens.Colors.textTertiary)
+                                .lineLimit(1)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    // Shared controls section
+                    AppRowControls(
+                        volume: volume,
+                        isMuted: isMutedExternal,
                         devices: devices,
+                        deviceIconOverrides: deviceIconOverrides,
                         selectedDeviceUID: selectedDeviceUID,
                         selectedDeviceUIDs: selectedDeviceUIDs,
                         isFollowingDefault: isFollowingDefault,
-                        mode: deviceSelectionMode
-                    ) {
-                        Text(subtitle)
-                            .font(.system(size: 9))
-                            .foregroundStyle(DesignTokens.Colors.textTertiary)
-                            .lineLimit(1)
-                    }
+                        defaultDeviceUID: defaultDeviceUID,
+                        deviceSelectionMode: deviceSelectionMode,
+                        boost: boost,
+                        isEQExpanded: isEQExpanded,
+                        onVolumeChange: onVolumeChange,
+                        onMuteChange: onMuteChange,
+                        onBoostChange: onBoostChange,
+                        onDeviceSelected: onDeviceSelected,
+                        onDevicesSelected: onDevicesSelected,
+                        onDeviceModeChange: onDeviceModeChange,
+                        onSelectFollowDefault: onSelectFollowDefault,
+                        onEQToggle: onEQToggle,
+                        isRowFocused: isFocused
+                    )
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                // Shared controls section
-                AppRowControls(
-                    volume: volume,
-                    isMuted: isMutedExternal,
-                    devices: devices,
-                    deviceIconOverrides: deviceIconOverrides,
-                    selectedDeviceUID: selectedDeviceUID,
-                    selectedDeviceUIDs: selectedDeviceUIDs,
-                    isFollowingDefault: isFollowingDefault,
-                    defaultDeviceUID: defaultDeviceUID,
-                    deviceSelectionMode: deviceSelectionMode,
-                    boost: boost,
-                    isEQExpanded: isEQExpanded,
-                    onVolumeChange: onVolumeChange,
-                    onMuteChange: onMuteChange,
-                    onBoostChange: onBoostChange,
-                    onDeviceSelected: onDeviceSelected,
-                    onDevicesSelected: onDevicesSelected,
-                    onDeviceModeChange: onDeviceModeChange,
-                    onSelectFollowDefault: onSelectFollowDefault,
-                    onEQToggle: onEQToggle,
-                    isRowFocused: isFocused
-                )
-            }
-            .frame(height: DesignTokens.Dimensions.rowContentHeight)
-        } expandedContent: {
-            VStack(alignment: .leading, spacing: 6) {
-                if !chromeTabs.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("CHROME TABS & WINDOWS")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(DesignTokens.Colors.textTertiary)
-                            .padding(.leading, 4)
-
-                        ForEach(chromeTabs) { tab in
-                            ChromeTabRow(
-                                tab: tab,
-                                onVolumeChange: { newVol in onTabVolumeChange(tab.id, newVol) },
-                                onMuteToggle: { onTabMuteToggle(tab.id) },
-                                isFocused: focusedTabID == tab.id
-                            )
-                        }
-                    }
-                    .padding(.bottom, 4)
-                }
-
-                // EQ panel - shown when expanded
+                .frame(height: DesignTokens.Dimensions.rowContentHeight)
+            } expandedContent: {
+                // EQ panel - only shown when EQ is expanded
                 EQPanelView(
                     settings: $localEQSettings,
                     userPresets: userPresets,
@@ -242,8 +223,24 @@ struct AppRow: View {
                     onDeleteUserPreset: onDeleteUserPreset,
                     onRenameUserPreset: onRenameUserPreset
                 )
+                .padding(.top, DesignTokens.Spacing.sm)
             }
-            .padding(.top, DesignTokens.Spacing.sm)
+
+            // Chrome tabs - always visible directly below the app row when present
+            if !chromeTabs.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(chromeTabs) { tab in
+                        ChromeTabRow(
+                            tab: tab,
+                            onVolumeChange: { newVol in onTabVolumeChange(tab.id, newVol) },
+                            onMuteToggle: { onTabMuteToggle(tab.id) },
+                            isFocused: focusedTabID == tab.id
+                        )
+                    }
+                }
+                .padding(.horizontal, DesignTokens.Spacing.sm)
+                .padding(.vertical, 4)
+            }
         }
         .onChange(of: eqSettings) { _, newValue in
             // Sync from parent when external EQ settings change

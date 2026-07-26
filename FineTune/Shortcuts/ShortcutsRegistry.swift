@@ -43,7 +43,7 @@ protocol PerAppHUDPresenting: AnyObject {
 @Observable
 final class ShortcutsRegistry {
     private static let logger = Logger(
-        subsystem: "com.finetuneapp.FineTune",
+        subsystem: "com.finetuneapp.MacVolumeMixer",
         category: "ShortcutsRegistry"
     )
 

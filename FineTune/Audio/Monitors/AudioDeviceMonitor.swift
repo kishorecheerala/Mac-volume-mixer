@@ -44,7 +44,7 @@ final class AudioDeviceMonitor: AudioDeviceProviding {
     /// Returns current input device priority order (highest priority first) for deterministic callback ordering
     var inputPriorityOrder: (() -> [String])?
 
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "AudioDeviceMonitor")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "AudioDeviceMonitor")
 
     private var deviceListListenerBlock: AudioObjectPropertyListenerBlock?
     private var deviceListAddress = AudioObjectPropertyAddress(

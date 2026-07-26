@@ -14,7 +14,7 @@ enum ShortcutAction: String, CaseIterable, Codable, Sendable {
 
     var displayName: String {
         switch self {
-        case .togglePopup: "Toggle FineTune Popup"
+        case .togglePopup: "Toggle Mac Volume Mixer Popup"
         case .targetAppVolumeUp: "App Volume Up"
         case .targetAppVolumeDown: "App Volume Down"
         case .targetAppMuteToggle: "App Mute"

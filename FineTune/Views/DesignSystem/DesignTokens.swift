@@ -2,7 +2,7 @@
 import SwiftUI
 import AppKit
 
-/// Design System tokens for FineTune UI
+/// Design System tokens for Mac Volume Mixer UI
 /// Centralized values for colors, typography, spacing, dimensions, and animations
 enum DesignTokens {
 
@@ -489,6 +489,6 @@ enum DesignTokens {
         static let support = URL(string: "https://ko-fi.com/ronitsingh10")!
 
         /// Project license on GitHub
-        static let license = URL(string: "https://github.com/ronitsingh10/FineTune/blob/main/LICENSE")!
+        static let license = URL(string: "https://github.com/kishorecheerala/Mac-volume-mixer/blob/main/LICENSE")!
     }
 }

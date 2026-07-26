@@ -26,7 +26,7 @@ enum IOAVServiceLoader {
     private nonisolated(unsafe) static var writeFn: WriteI2CFn?
     private nonisolated(unsafe) static var didLoad = false
 
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "DDCService")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "DDCService")
 
     static func ensureLoaded() -> Bool {
         guard !didLoad else { return createFn != nil }
@@ -313,7 +313,7 @@ final class DDCService: @unchecked Sendable {
 extension DDCService {
     /// Finds all DCPAVServiceProxy entries in the IORegistry and creates DDCService instances.
     /// Returns pairs of (io_service_t entry, DDCService).
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "DDCService")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "DDCService")
 
     static func discoverServices() -> [(entry: io_service_t, service: DDCService)] {
         guard IOAVServiceLoader.ensureLoaded() else {

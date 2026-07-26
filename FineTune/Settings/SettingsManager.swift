@@ -91,7 +91,7 @@ final class SettingsManager {
     private var settings: Settings
     private var saveTask: Task<Void, Never>?
     private let settingsURL: URL
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "SettingsManager")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "SettingsManager")
 
     struct Settings: Codable {
         var version: Int = 12
@@ -346,7 +346,7 @@ final class SettingsManager {
         // Hiding is mutually exclusive with pinning
         settings.pinnedApps.remove(identifier)
         settings.pinnedAppInfo.removeValue(forKey: identifier)
-        // Clear per-app settings — FineTune won't interact with this app
+        // Clear per-app settings — Mac Volume Mixer won't interact with this app
         settings.appVolumes.removeValue(forKey: identifier)
         settings.appBoosts.removeValue(forKey: identifier)
         settings.appMutes.removeValue(forKey: identifier)

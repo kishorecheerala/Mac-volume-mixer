@@ -18,11 +18,11 @@ protocol URLHandlerEngine {
     func getMuteForInactive(identifier: String) -> Bool
 }
 
-/// Handles URL scheme actions for FineTune (finetune://...)
+/// Handles URL scheme actions for Mac Volume Mixer (finetune://...)
 @MainActor
 final class URLHandler {
     private let audioEngine: any URLHandlerEngine
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "URLHandler")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "URLHandler")
 
     init(audioEngine: any URLHandlerEngine) {
         self.audioEngine = audioEngine

@@ -73,8 +73,7 @@ struct MenuBarPopupView: View {
     /// collapsed). Mirrors the `expandedRowID` pattern used for per-app EQ.
     @State private var expandedDeviceUID: String?
 
-    /// Hover state for support link heart animation
-    @State private var isSupportHovered = false
+
 
     /// Namespace for device toggle animation
     @Namespace private var deviceToggleNamespace
@@ -366,8 +365,8 @@ struct MenuBarPopupView: View {
                 .font(DesignTokens.Typography.caption)
                 .foregroundStyle(DesignTokens.Colors.textSecondary)
                 .glassButtonStyle()
-                .accessibilityLabel("Quit FineTune")
-                .help("Quit FineTune (⌘Q)")
+                .accessibilityLabel("Quit Mac Volume Mixer")
+                .help("Quit Mac Volume Mixer (⌘Q)")
             }
         }
     }

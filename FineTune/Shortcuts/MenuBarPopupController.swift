@@ -27,7 +27,7 @@ protocol MenuBarPopupControlling: AnyObject {
 @MainActor
 final class MenuBarPopupController: MenuBarPopupControlling {
     private static let logger = Logger(
-        subsystem: "com.finetuneapp.FineTune",
+        subsystem: "com.finetuneapp.MacVolumeMixer",
         category: "MenuBarPopupController"
     )
 

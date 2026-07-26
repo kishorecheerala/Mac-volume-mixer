@@ -4,7 +4,7 @@ import os
 
 /// Parses EqualizerAPO ParametricEQ.txt files into AutoEQ profiles.
 struct AutoEQParser {
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "AutoEQParser")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "AutoEQParser")
 
     // MARK: - ParametricEQ.txt Parsing
 

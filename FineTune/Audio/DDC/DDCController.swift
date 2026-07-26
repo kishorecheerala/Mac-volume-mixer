@@ -23,9 +23,9 @@ final class DDCController {
     private var probeWorkItem: DispatchWorkItem?
     private var displayChangeObserver: NSObjectProtocol?
 
-    private let ddcQueue = DispatchQueue(label: "com.finetune.ddc", qos: .utility)
+    private let ddcQueue = DispatchQueue(label: "com.macvolumemixer.ddc", qos: .utility)
     private let settingsManager: SettingsManager
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "DDCController")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "DDCController")
 
     /// Callback when DDC probe completes (triggers device list refresh)
     var onProbeCompleted: (() -> Void)?

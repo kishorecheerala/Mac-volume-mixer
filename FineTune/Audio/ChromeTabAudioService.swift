@@ -16,7 +16,7 @@ final class ChromeTabAudioService {
 
     private nonisolated(unsafe) var pollTask: Task<Void, Never>?
     private let cdpPort: Int
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "ChromeTabAudioService")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "ChromeTabAudioService")
 
     init(cdpPort: Int = 9222) {
         self.cdpPort = cdpPort

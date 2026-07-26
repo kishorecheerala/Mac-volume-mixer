@@ -23,7 +23,7 @@ final class DeviceInspectorViewModel {
     private var errorClearTask: Task<Void, Never>?
 
     private static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier ?? "com.finetuneapp.FineTune",
+        subsystem: Bundle.main.bundleIdentifier ?? "com.finetuneapp.MacVolumeMixer",
         category: "DeviceInspectorViewModel"
     )
 

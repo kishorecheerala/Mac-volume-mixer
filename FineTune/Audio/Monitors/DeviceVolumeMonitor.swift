@@ -67,7 +67,7 @@ final class DeviceVolumeMonitor: DeviceVolumeProviding {
 
     private let deviceMonitor: AudioDeviceMonitor
     private let settingsManager: SettingsManager
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "DeviceVolumeMonitor")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "DeviceVolumeMonitor")
 
     #if !APP_STORE
     private let ddcController: DDCController?

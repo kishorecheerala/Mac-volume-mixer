@@ -24,7 +24,7 @@ struct MediaKeyOfflineCard: View {
                     Spacer(minLength: DesignTokens.Spacing.xs)
                 }
 
-                Text("The system disabled FineTune's event tap — usually after a sleep/wake cycle or a main-thread stall. Retry to reinstall it.")
+                Text("The system disabled Mac Volume Mixer's event tap — usually after a sleep/wake cycle or a main-thread stall. Retry to reinstall it.")
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Colors.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)

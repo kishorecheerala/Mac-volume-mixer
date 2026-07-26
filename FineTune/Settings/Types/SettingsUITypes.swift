@@ -32,7 +32,7 @@ enum MenuBarIconStyle: String, Codable, CaseIterable, Identifiable {
 
 // MARK: - HUD Style
 
-/// Style of the on-screen HUD shown when media keys drive FineTune's volume.
+/// Style of the on-screen HUD shown when media keys drive Mac Volume Mixer's volume.
 /// `.tahoe` renders a small top-right pill; `.classic` renders a center-bottom panel
 /// with 16 segment tiles matching Apple's pre-Tahoe HUD aesthetic.
 enum HUDStyle: String, Codable, CaseIterable, Identifiable {

@@ -28,7 +28,7 @@ struct AboutTab: View {
                     .interpolation(.high)
                     .frame(width: 96, height: 96)
 
-                Text("FineTune")
+                Text("Mac Volume Mixer")
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(DesignTokens.Colors.textPrimary)
 
@@ -41,19 +41,11 @@ struct AboutTab: View {
 
             HStack(spacing: 8) {
                 AboutLinkChip(
-                    label: "Donate",
-                    icon: "heart.fill",
-                    hoverIcon: "heart.fill",
-                    hoverColor: .pink,
-                    url: DesignTokens.Links.support,
-                    isPrimary: true
-                )
-                AboutLinkChip(
                     label: "Star on GitHub",
                     icon: "star",
                     hoverIcon: "star.fill",
                     hoverColor: .yellow,
-                    url: URL(string: "https://github.com/ronitsingh10/FineTune")!
+                    url: URL(string: "https://github.com/kishorecheerala/Mac-volume-mixer")!
                 )
             }
 
@@ -74,7 +66,7 @@ struct AboutTab: View {
             .buttonStyle(.plain)
 
             Text("·")
-            Text("© \(yearText) Ronit Singh")
+            Text("© \(yearText) Kishore Cheerala")
         }
         .font(.system(size: 10))
         .foregroundStyle(.tertiary)

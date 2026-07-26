@@ -15,7 +15,7 @@ final class AudioProcessMonitor: AudioProcessMonitoring {
     private(set) var activeApps: [AudioApp] = []
     var onAppsChanged: (([AudioApp]) -> Void)?
 
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "FineTune", category: "AudioProcessMonitor")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "MacVolumeMixer", category: "AudioProcessMonitor")
 
     /// Bundle ID prefixes for system daemons that should be filtered from the apps list
     /// These produce system audio (Siri, alerts, notifications) and shouldn't appear as user apps
