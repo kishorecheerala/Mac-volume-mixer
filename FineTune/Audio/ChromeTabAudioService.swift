@@ -81,8 +81,17 @@ final class ChromeTabAudioService {
     func refreshTabs() async {
         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome")
             + NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.canary")
+            + NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.beta")
+            + NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome.dev")
+            + NSRunningApplication.runningApplications(withBundleIdentifier: "org.chromium.Chromium")
+            + NSRunningApplication.runningApplications(withBundleIdentifier: "com.brave.Browser")
 
-        guard !runningApps.isEmpty else {
+        let anyChrome = !runningApps.isEmpty || NSWorkspace.shared.runningApplications.contains(where: {
+            ($0.bundleIdentifier?.localizedCaseInsensitiveContains("Chrome") == true) ||
+            ($0.localizedName?.localizedCaseInsensitiveContains("Chrome") == true)
+        })
+
+        guard anyChrome else {
             if isChromeRunning {
                 isChromeRunning = false
                 isCDPAvailable = false
@@ -202,7 +211,11 @@ final class ChromeTabAudioService {
             var errorInfo: NSDictionary?
             let output = script.executeAndReturnError(&errorInfo)
 
-            guard errorInfo == nil, let text = output.stringValue else { return [] }
+            if let errorInfo {
+                self.logger.warning("AppleScript tab execution info: \(errorInfo)")
+            }
+
+            guard let text = output.stringValue else { return [] }
             return self.parseAppleScriptResponse(text)
         }.value
     }

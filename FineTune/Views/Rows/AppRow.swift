@@ -145,10 +145,22 @@ struct AppRow: View {
                 // system default; the same VStack-with-subtitle pattern as device
                 // rows' AutoEQ subtitle).
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(app.name)
-                        .font(DesignTokens.Typography.rowName)
-                        .lineLimit(1)
-                        .help(app.name)
+                    HStack(spacing: 6) {
+                        Text(app.name)
+                            .font(DesignTokens.Typography.rowName)
+                            .lineLimit(1)
+                            .help(app.name)
+
+                        if !chromeTabs.isEmpty {
+                            Text("\(chromeTabs.count) tab\(chromeTabs.count == 1 ? "" : "s")")
+                                .font(.system(size: 9, weight: .bold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(DesignTokens.Colors.accentPrimary.opacity(0.2))
+                                .foregroundStyle(DesignTokens.Colors.accentPrimary)
+                                .clipShape(Capsule())
+                        }
+                    }
 
                     if let subtitle = DevicePicker.routingSubtitle(
                         devices: devices,

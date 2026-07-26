@@ -207,6 +207,10 @@ struct MenuBarPopupView: View {
             isPopupVisible = true
             popupVisibility.isVisible = true
             audioEngine.bluetoothDeviceMonitor.refresh()
+            audioEngine.chromeTabAudioService.startPolling()
+            Task {
+                await audioEngine.chromeTabAudioService.refreshTabs()
+            }
             syncNavOrder()
             hasKeyboardEngaged = false
             selectedRow = nil
