@@ -40,6 +40,7 @@ struct AppRow: View {
     let focusedTabID: String?
 
     @State private var isIconHovered = false
+    @State private var isTabsExpanded = false
     @State private var localEQSettings: EQSettings
 
     init(
@@ -153,13 +154,26 @@ struct AppRow: View {
                                 .help(app.name)
 
                             if !chromeTabs.isEmpty {
-                                Text("\(chromeTabs.count) tab\(chromeTabs.count == 1 ? "" : "s")")
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        isTabsExpanded.toggle()
+                                    }
+                                } label: {
+                                    HStack(spacing: 3) {
+                                        Text("\(chromeTabs.count) tab\(chromeTabs.count == 1 ? "" : "s")")
+                                        Image(systemName: isTabsExpanded ? "chevron.up" : "chevron.down")
+                                            .font(.system(size: 8, weight: .bold))
+                                    }
                                     .font(.system(size: 9, weight: .bold))
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(DesignTokens.Colors.accentPrimary.opacity(0.2))
-                                    .foregroundStyle(DesignTokens.Colors.accentPrimary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(isTabsExpanded ? DesignTokens.Colors.accentPrimary : DesignTokens.Colors.accentPrimary.opacity(0.2))
+                                    .foregroundStyle(isTabsExpanded ? .white : DesignTokens.Colors.accentPrimary)
                                     .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(isTabsExpanded ? "Collapse Chrome tabs" : "Expand Chrome tabs")
+                                .help(isTabsExpanded ? "Click to collapse Chrome tabs" : "Click to view Chrome tabs")
                             }
                         }
 
@@ -226,8 +240,8 @@ struct AppRow: View {
                 .padding(.top, DesignTokens.Spacing.sm)
             }
 
-            // Chrome tabs - always visible directly below the app row when present
-            if !chromeTabs.isEmpty {
+            // Chrome tabs - collapsible section, collapsed by default
+            if !chromeTabs.isEmpty && isTabsExpanded {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(chromeTabs) { tab in
                         ChromeTabRow(
