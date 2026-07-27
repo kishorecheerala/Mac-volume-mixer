@@ -5,6 +5,7 @@ import AppKit
 @testable import FineTune
 
 @Suite("DeviceIconResolver")
+@MainActor
 struct DeviceIconResolverTests {
     private let automatic = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: nil)
 

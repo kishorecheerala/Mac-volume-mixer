@@ -8,7 +8,7 @@ struct ClassicStyleHUD: View {
 
     // MARK: - Constants
 
-    static let hasPercentageLabel: Bool = false
+    nonisolated static let hasPercentageLabel: Bool = false
 
     private static let tileCount: Int = 16
     private static let frameSize: CGFloat = 200

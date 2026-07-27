@@ -63,8 +63,8 @@ struct ChromeTabAudioServiceTests {
     func testAppleScriptResponseParsing() {
         let service = ChromeTabAudioService()
         let scriptOutput = """
-        1|||1|||101|||Google Search|||https://www.google.com
-        1|||2|||102|||Spotify - Web Player|||https://open.spotify.com
+        1|||1|||101|||0|||Google Search|||https://www.google.com
+        1|||2|||102|||0|||Spotify - Web Player|||https://open.spotify.com
         """
 
         let parsed = service.parseAppleScriptResponse(scriptOutput)
@@ -82,7 +82,7 @@ struct ChromeTabAudioServiceTests {
     func testSetVolumeAndMute() async {
         let service = ChromeTabAudioService()
 
-        let rawOutput = "1|||1|||999|||Podcast Player|||https://podcast.example.com"
+        let rawOutput = "1|||1|||999|||0|||Podcast Player|||https://podcast.example.com"
         let initialTabs = service.parseAppleScriptResponse(rawOutput)
         #expect(initialTabs.count == 1)
 

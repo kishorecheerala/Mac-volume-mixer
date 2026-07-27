@@ -319,7 +319,7 @@ final class ProcessTapController: ProcessTapControlling {
     ///   - outputUIDs: The user-selected output device UIDs (1 = single, >1 = mirroring).
     ///   - expand: Returns an aggregate's hardware sub-device UIDs, or `nil` for non-aggregates.
     ///   - outputStreamCount: Returns a device's output-stream count (0 if unknown).
-    static func planAggregate(
+    nonisolated static func planAggregate(
         outputUIDs: [String],
         expand: (String) -> [String]?,
         outputStreamCount: (String) -> Int
@@ -442,7 +442,7 @@ final class ProcessTapController: ProcessTapControlling {
     /// Per-input-stream "is used" flags for `kAudioDevicePropertyIOProcStreamUsage`, or `nil`
     /// when there is nothing to disable. Only the trailing `outputCount` input streams (the
     /// process tap — the only input the audio callback reads) are marked used.
-    static func inputStreamUsageFlags(inputCount: Int, outputCount: Int) -> [UInt32]? {
+    nonisolated static func inputStreamUsageFlags(inputCount: Int, outputCount: Int) -> [UInt32]? {
         // outputCount == 0 also covers a failed stream-count read; an all-unused map would
         // disable the tap stream itself (the HAL delivers NULL buffers for unused streams).
         guard inputCount > 0, outputCount > 0 else { return nil }

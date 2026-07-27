@@ -78,7 +78,7 @@ private final class TestABL {
         return Int(buf.mDataByteSize) / MemoryLayout<Float>.size
     }
 
-    isolated deinit {
+    deinit {
         for p in dataPointers { p.deallocate() }
         pointer.deallocate()
     }

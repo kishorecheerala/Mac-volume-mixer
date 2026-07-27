@@ -137,25 +137,40 @@ final class ChromeTabAudioService {
     }
 
     private func isMediaOrAudioTab(_ tab: ChromeTabAudioItem) -> Bool {
+        // 1. Keep any tab user explicitly customized volume for
         if volumeMap[tab.id] != nil || muteMap[tab.id] != nil {
             return true
         }
+
+        // 2. Keep any tab Chrome explicitly marks as emitting audio
         if tab.isPlayingAudio {
             return true
         }
-        let titleLower = tab.title.lowercased()
+
         let urlLower = (tab.url ?? "").lowercased()
 
-        let mediaKeywords = [
-            "netflix", "youtube", "hotstar", "primevideo", "spotify", "twitch",
-            "hulu", "disney", "soundcloud", "vimeo", "moviebox", "shuttletv",
-            "movierulz", "apple.com/music", "hbomax", "max.com", "peacock",
-            "paramount", "bilibili", "plex", "crunchyroll", "jiocinema", "zee5",
-            "sonyliv", "1flex", "thesvg", "watch", "stream", "play", "video",
-            "listen", "live tv", "radio", "podcast", "player"
-        ]
+        // 3. Strict watch/play URL page patterns
+        let isNetflixWatch = urlLower.contains("netflix.com/watch")
+        let isYouTubeWatch = urlLower.contains("youtube.com/watch")
+        let isPrimeWatch = urlLower.contains("primevideo.com") || urlLower.contains("amazon.com/video")
+        let isSpotifyPlayer = urlLower.contains("spotify.com")
+        let isTwitchWatch = urlLower.contains("twitch.tv")
+        let isHuluWatch = urlLower.contains("hulu.com/watch")
+        let isDisneyWatch = urlLower.contains("disneyplus.com")
+        let isSoundcloud = urlLower.contains("soundcloud.com")
+        let isAppleMusic = urlLower.contains("music.apple.com")
+        let isShuttleTVWatch = urlLower.contains("shuttletv") && urlLower.contains("watch")
+        let isMovieboxWatch = urlLower.contains("moviebox") && (urlLower.contains("detail") || urlLower.contains("watch"))
+        let isMovieRulzWatch = urlLower.contains("movierulz") && urlLower.contains("category")
 
-        return mediaKeywords.contains(where: { titleLower.contains($0) || urlLower.contains($0) })
+        let isWatchPage = isNetflixWatch || isYouTubeWatch || isPrimeWatch || isSpotifyPlayer || isTwitchWatch || isHuluWatch || isDisneyWatch || isSoundcloud || isAppleMusic || isMovieboxWatch || isMovieRulzWatch || isShuttleTVWatch
+
+        // Tab must be the active focused tab of a watch page
+        if isWatchPage && tab.isActiveTab {
+            return true
+        }
+
+        return false
     }
 
     // MARK: - JXA (JavaScript for Automation) Fallback Implementation
@@ -174,12 +189,16 @@ final class ChromeTabAudioService {
             var result = [];
             for (var wi = 0; wi < wins.length; wi++) {
                 var tabs = wins[wi].tabs();
+                var activeTabId = null;
+                try { activeTabId = wins[wi].activeTab().id(); } catch(e) {}
                 for (var ti = 0; ti < tabs.length; ti++) {
                     var t = tabs[ti];
                     try {
+                        var tabId = t.id();
+                        var isActive = (tabId === activeTabId);
                         var isAudible = false;
                         try { isAudible = t.audible(); } catch(e) {}
-                        result.push((wi+1) + '|||' + (ti+1) + '|||' + t.id() + '|||' + (isAudible ? '1' : '0') + '|||' + (t.title() || '') + '|||' + (t.url() || ''));
+                        result.push((wi+1) + '|||' + (ti+1) + '|||' + tabId + '|||' + (isAudible ? '1' : '0') + '|||' + (isActive ? '1' : '0') + '|||' + (t.title() || '') + '|||' + (t.url() || ''));
                     } catch(e) {}
                 }
             }
@@ -219,14 +238,26 @@ final class ChromeTabAudioService {
             let tabIdxStr = parts[1].trimmingCharacters(in: .whitespaces)
             let tabID = parts[2].trimmingCharacters(in: .whitespaces)
             let audibleStr = parts[3].trimmingCharacters(in: .whitespaces)
-            let title = parts[4].trimmingCharacters(in: .whitespaces)
-            let url = parts[5].trimmingCharacters(in: .whitespaces)
+
+            var isActiveStr = "0"
+            var title = ""
+            var url = ""
+
+            if parts.count >= 7 {
+                isActiveStr = parts[4].trimmingCharacters(in: .whitespaces)
+                title = parts[5].trimmingCharacters(in: .whitespaces)
+                url = parts[6].trimmingCharacters(in: .whitespaces)
+            } else {
+                title = parts[4].trimmingCharacters(in: .whitespaces)
+                url = parts[5].trimmingCharacters(in: .whitespaces)
+            }
 
             guard let winIdx = Int(winIdxStr) else { continue }
 
             let compositeID = "win_\(winIdx)_tab_\(tabID)"
             let displayTitle = title.isEmpty ? "Tab \(tabIdxStr)" : title
             let isAudible = (audibleStr == "1")
+            let isActive = (isActiveStr == "1")
 
             let item = ChromeTabAudioItem(
                 id: compositeID,
@@ -235,11 +266,35 @@ final class ChromeTabAudioService {
                 title: displayTitle,
                 url: url.isEmpty ? nil : url,
                 isPlayingAudio: isAudible,
+                isActiveTab: isActive,
                 discoverySource: .appleScript
             )
             items.append(item)
         }
         return items
+    }
+
+    struct CDPTarget: Decodable {
+        let id: String
+        let title: String
+        let type: String
+        let url: String?
+        let faviconUrl: String?
+    }
+
+    nonisolated func parseCDPResponse(_ data: Data) -> [ChromeTabAudioItem] {
+        guard let targets = try? JSONDecoder().decode([CDPTarget].self, from: data) else { return [] }
+        return targets.compactMap { target in
+            guard target.type == "page" else { return nil }
+            return ChromeTabAudioItem(
+                id: target.id,
+                tabID: target.id,
+                windowID: 1,
+                title: target.title,
+                url: target.url,
+                discoverySource: .cdp
+            )
+        }
     }
 
     // MARK: - Script Application

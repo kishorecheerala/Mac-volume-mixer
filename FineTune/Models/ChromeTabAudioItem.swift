@@ -18,6 +18,7 @@ struct ChromeTabAudioItem: Identifiable, Equatable, Hashable, Sendable {
     var volume: Float  // 0.0 ... 1.0
     var isMuted: Bool
     var isPlayingAudio: Bool
+    var isActiveTab: Bool
     let discoverySource: ChromeTabDiscoverySource
 
     init(
@@ -30,6 +31,7 @@ struct ChromeTabAudioItem: Identifiable, Equatable, Hashable, Sendable {
         volume: Float = 1.0,
         isMuted: Bool = false,
         isPlayingAudio: Bool = false,
+        isActiveTab: Bool = false,
         discoverySource: ChromeTabDiscoverySource = .appleScript
     ) {
         self.id = id
@@ -41,6 +43,7 @@ struct ChromeTabAudioItem: Identifiable, Equatable, Hashable, Sendable {
         self.volume = max(0.0, min(1.0, volume))
         self.isMuted = isMuted
         self.isPlayingAudio = isPlayingAudio
+        self.isActiveTab = isActiveTab
         self.discoverySource = discoverySource
     }
 

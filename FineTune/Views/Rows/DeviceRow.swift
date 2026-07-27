@@ -256,7 +256,7 @@ struct DeviceRow: View {
 extension DeviceRow {
     // MARK: - Volume Mapping
 
-    static func volumeToSlider(_ volume: Float, backend: VolumeControlTier) -> Double {
+    nonisolated static func volumeToSlider(_ volume: Float, backend: VolumeControlTier) -> Double {
         VolumeMapping.sliderFraction(forSystemGain: volume, tier: backend)
     }
 
