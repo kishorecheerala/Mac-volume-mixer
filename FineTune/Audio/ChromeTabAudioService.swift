@@ -117,14 +117,45 @@ final class ChromeTabAudioService {
                 tab.isMuted = savedMute
             }
 
-            // Dynamic audio detection: Only keep tabs actively producing audio or customized by the user
-            let isCustomized = volumeMap[tab.id] != nil || muteMap[tab.id] != nil
-
-            if tab.isPlayingAudio || isCustomized {
+            if isMediaOrAudioTab(tab) {
                 updated.append(tab)
             }
         }
+
+        // Fallback: If no media tabs matched, include active tabs from open windows so the list is never empty
+        if updated.isEmpty && !newTabs.isEmpty {
+            var seenWindows = Set<Int>()
+            for tab in newTabs {
+                if !seenWindows.contains(tab.windowID) {
+                    seenWindows.insert(tab.windowID)
+                    updated.append(tab)
+                }
+            }
+        }
+
         self.tabs = updated
+    }
+
+    private func isMediaOrAudioTab(_ tab: ChromeTabAudioItem) -> Bool {
+        if volumeMap[tab.id] != nil || muteMap[tab.id] != nil {
+            return true
+        }
+        if tab.isPlayingAudio {
+            return true
+        }
+        let titleLower = tab.title.lowercased()
+        let urlLower = (tab.url ?? "").lowercased()
+
+        let mediaKeywords = [
+            "netflix", "youtube", "hotstar", "primevideo", "spotify", "twitch",
+            "hulu", "disney", "soundcloud", "vimeo", "moviebox", "shuttletv",
+            "movierulz", "apple.com/music", "hbomax", "max.com", "peacock",
+            "paramount", "bilibili", "plex", "crunchyroll", "jiocinema", "zee5",
+            "sonyliv", "1flex", "thesvg", "watch", "stream", "play", "video",
+            "listen", "live tv", "radio", "podcast", "player"
+        ]
+
+        return mediaKeywords.contains(where: { titleLower.contains($0) || urlLower.contains($0) })
     }
 
     // MARK: - JXA (JavaScript for Automation) Fallback Implementation
