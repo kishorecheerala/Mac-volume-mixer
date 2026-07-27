@@ -117,31 +117,14 @@ final class ChromeTabAudioService {
                 tab.isMuted = savedMute
             }
 
-            // Only keep tabs that are emitting audio, on known media domains, or customized by user
+            // Dynamic audio detection: Only keep tabs actively producing audio or customized by the user
             let isCustomized = volumeMap[tab.id] != nil || muteMap[tab.id] != nil
-            let isMedia = isMediaDomain(url: tab.url, title: tab.title)
 
-            if tab.isPlayingAudio || isMedia || isCustomized {
+            if tab.isPlayingAudio || isCustomized {
                 updated.append(tab)
             }
         }
         self.tabs = updated
-    }
-
-    private func isMediaDomain(url: String?, title: String) -> Bool {
-        let lowerTitle = title.lowercased()
-        if lowerTitle.contains("youtube") || lowerTitle.contains("netflix") || lowerTitle.contains("prime video") || lowerTitle.contains("spotify") || lowerTitle.contains("hulu") || lowerTitle.contains("twitch") {
-            return true
-        }
-        guard let url = url?.lowercased() else { return false }
-        let mediaKeywords = [
-            "youtube.com", "netflix.com", "primevideo.com", "amazon.com/video",
-            "spotify.com", "twitch.tv", "hulu.com", "disneyplus.com",
-            "soundcloud.com", "music.apple.com", "vimeo.com", "dailymotion.com",
-            "hbomax.com", "max.com", "peacocktv.com", "paramountplus.com",
-            "shuttletv", "moviebox", "themoviebox", "bilibili.com"
-        ]
-        return mediaKeywords.contains(where: { url.contains($0) })
     }
 
     // MARK: - JXA (JavaScript for Automation) Fallback Implementation
