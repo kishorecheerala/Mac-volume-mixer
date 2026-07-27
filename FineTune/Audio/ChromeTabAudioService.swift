@@ -102,16 +102,9 @@ final class ChromeTabAudioService {
 
         isChromeRunning = true
 
-        // Try CDP first (must yield at least 1 tab, otherwise fallback to JXA)
-        if let cdpTabs = await fetchCDPTabs(), !cdpTabs.isEmpty {
-            isCDPAvailable = true
-            updateTabsList(with: cdpTabs)
-        } else {
-            isCDPAvailable = false
-            // Fallback to JXA
-            let scriptTabs = await fetchAppleScriptTabs()
-            updateTabsList(with: scriptTabs)
-        }
+        // Discover Chrome tabs via JXA
+        let scriptTabs = await fetchAppleScriptTabs()
+        updateTabsList(with: scriptTabs)
     }
 
     private func updateTabsList(with newTabs: [ChromeTabAudioItem]) {
@@ -123,62 +116,32 @@ final class ChromeTabAudioService {
             if let savedMute = muteMap[tab.id] {
                 tab.isMuted = savedMute
             }
-            updated.append(tab)
+
+            // Only keep tabs that are emitting audio, on known media domains, or customized by user
+            let isCustomized = volumeMap[tab.id] != nil || muteMap[tab.id] != nil
+            let isMedia = isMediaDomain(url: tab.url, title: tab.title)
+
+            if tab.isPlayingAudio || isMedia || isCustomized {
+                updated.append(tab)
+            }
         }
         self.tabs = updated
     }
 
-    // MARK: - CDP (Chrome DevTools Protocol) Implementation
-
-    private func fetchCDPTabs() async -> [ChromeTabAudioItem]? {
-        guard let url = URL(string: "http://localhost:\(cdpPort)/json/list") else { return nil }
-
-        var request = URLRequest(url: url)
-        request.timeoutInterval = 0.8 // Fast timeout for responsiveness
-
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return nil
-            }
-
-            return parseCDPResponse(data)
-        } catch {
-            return nil
+    private func isMediaDomain(url: String?, title: String) -> Bool {
+        let lowerTitle = title.lowercased()
+        if lowerTitle.contains("youtube") || lowerTitle.contains("netflix") || lowerTitle.contains("prime video") || lowerTitle.contains("spotify") || lowerTitle.contains("hulu") || lowerTitle.contains("twitch") {
+            return true
         }
-    }
-
-    nonisolated func parseCDPResponse(_ data: Data) -> [ChromeTabAudioItem] {
-        struct CDPTarget: Decodable {
-            let id: String
-            let title: String?
-            let type: String?
-            let url: String?
-            let faviconUrl: String?
-        }
-
-        guard let targets = try? JSONDecoder().decode([CDPTarget].self, from: data) else {
-            return []
-        }
-
-        var result: [ChromeTabAudioItem] = []
-        for (index, target) in targets.enumerated() {
-            guard target.type == "page" || target.type == nil else { continue }
-            let title = (target.title?.isEmpty == false) ? target.title! : "Chrome Tab \(index + 1)"
-            let favicon: URL? = target.faviconUrl.flatMap { URL(string: $0) }
-
-            let item = ChromeTabAudioItem(
-                id: target.id,
-                tabID: target.id,
-                windowID: 1,
-                title: title,
-                url: target.url,
-                faviconURL: favicon,
-                discoverySource: .cdp
-            )
-            result.append(item)
-        }
-        return result
+        guard let url = url?.lowercased() else { return false }
+        let mediaKeywords = [
+            "youtube.com", "netflix.com", "primevideo.com", "amazon.com/video",
+            "spotify.com", "twitch.tv", "hulu.com", "disneyplus.com",
+            "soundcloud.com", "music.apple.com", "vimeo.com", "dailymotion.com",
+            "hbomax.com", "max.com", "peacocktv.com", "paramountplus.com",
+            "shuttletv", "moviebox", "themoviebox", "bilibili.com"
+        ]
+        return mediaKeywords.contains(where: { url.contains($0) })
     }
 
     // MARK: - JXA (JavaScript for Automation) Fallback Implementation
@@ -200,7 +163,9 @@ final class ChromeTabAudioService {
                 for (var ti = 0; ti < tabs.length; ti++) {
                     var t = tabs[ti];
                     try {
-                        result.push((wi+1) + '|||' + (ti+1) + '|||' + t.id() + '|||' + t.title() + '|||' + t.url());
+                        var isAudible = false;
+                        try { isAudible = t.audible(); } catch(e) {}
+                        result.push((wi+1) + '|||' + (ti+1) + '|||' + t.id() + '|||' + (isAudible ? '1' : '0') + '|||' + (t.title() || '') + '|||' + (t.url() || ''));
                     } catch(e) {}
                 }
             }
@@ -234,18 +199,20 @@ final class ChromeTabAudioService {
 
         for line in lines {
             let parts = line.components(separatedBy: "|||")
-            guard parts.count >= 5 else { continue }
+            guard parts.count >= 6 else { continue }
 
             let winIdxStr = parts[0].trimmingCharacters(in: .whitespaces)
             let tabIdxStr = parts[1].trimmingCharacters(in: .whitespaces)
             let tabID = parts[2].trimmingCharacters(in: .whitespaces)
-            let title = parts[3].trimmingCharacters(in: .whitespaces)
-            let url = parts[4].trimmingCharacters(in: .whitespaces)
+            let audibleStr = parts[3].trimmingCharacters(in: .whitespaces)
+            let title = parts[4].trimmingCharacters(in: .whitespaces)
+            let url = parts[5].trimmingCharacters(in: .whitespaces)
 
             guard let winIdx = Int(winIdxStr) else { continue }
 
             let compositeID = "win_\(winIdx)_tab_\(tabID)"
             let displayTitle = title.isEmpty ? "Tab \(tabIdxStr)" : title
+            let isAudible = (audibleStr == "1")
 
             let item = ChromeTabAudioItem(
                 id: compositeID,
@@ -253,6 +220,7 @@ final class ChromeTabAudioService {
                 windowID: winIdx,
                 title: displayTitle,
                 url: url.isEmpty ? nil : url,
+                isPlayingAudio: isAudible,
                 discoverySource: .appleScript
             )
             items.append(item)

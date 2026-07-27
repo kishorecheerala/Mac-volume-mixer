@@ -277,7 +277,7 @@ final class HUDWindowController: MediaKeyHUDPresenting {
             }
         case .classic:
             let x = visibleFrame.midX - size.width / 2
-            let y = visibleFrame.minY + 140
+            let y = visibleFrame.midY - size.height / 2
             return NSPoint(x: x, y: y)
         }
     }
